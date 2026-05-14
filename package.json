@@ -1,6 +1,6 @@
 {
   "name": "claude-notif",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Native macOS notifications for Claude Code — sound + banner when Claude finishes responding",
   "os": [
     "darwin"
