@@ -7,7 +7,15 @@ APP_DEST="$HOME/Applications/${APP_NAME}.app"
 HOOKS_DIR="$HOME/.claude/hooks"
 CONFIG_FILE="$HOME/.claude/notifications.json"
 SETTINGS_FILE="$HOME/.claude/settings.json"
+VERSION_FILE="$HOME/.claude/claude-notif-version"
+LAUNCH_AGENT_PLIST="$HOME/Library/LaunchAgents/com.claudenotif.updater.plist"
+UPDATER_SCRIPT="$HOME/.claude/claude-notif-updater.sh"
 LSREGISTER="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+PACKAGE_VERSION=$(python3 -c "import json; print(json.load(open('$PACKAGE_DIR/package.json'))['version'])")
+
+# Silent update mode — skips opening the window
+IS_UPDATE=false
+[[ "$1" == "--update" ]] && IS_UPDATE=true
 
 bold="\033[1m"
 green="\033[32m"
@@ -20,9 +28,11 @@ ok()   { echo -e "${green}  ✓ $1${reset}"; }
 warn() { echo -e "${yellow}  ⚠ $1${reset}"; }
 fail() { echo -e "${red}  ✗ $1${reset}"; exit 1; }
 
-echo ""
-echo -e "${bold}claude-notif installer${reset}"
-echo "─────────────────────────────────"
+if [ "$IS_UPDATE" = false ]; then
+  echo ""
+  echo -e "${bold}claude-notif installer${reset}"
+  echo "─────────────────────────────────"
+fi
 
 # 1. Platform check
 step "Checking platform"
@@ -44,7 +54,6 @@ SWIFT_FLAGS="-parse-as-library -framework SwiftUI -framework AppKit -framework F
 
 BINARY_PATH=""
 
-# Try universal binary first
 if swiftc $SWIFT_FLAGS \
      -target arm64-apple-macosx12.0 \
      -o "$BUILD_DIR/ClaudeCode-arm64" \
@@ -58,7 +67,6 @@ if swiftc $SWIFT_FLAGS \
   BINARY_PATH="$BUILD_DIR/ClaudeCode"
   ok "Universal binary (arm64 + x86_64)"
 else
-  # Fall back to native arch
   swiftc $SWIFT_FLAGS \
     -o "$BUILD_DIR/ClaudeCode" \
     "$PACKAGE_DIR/src/ClaudeNotifier.swift" 2>/dev/null || \
@@ -131,7 +139,7 @@ def add_hook(event, command):
     for group in entries:
         for h in group.get("hooks", []):
             if command in h.get("command", ""):
-                return  # already registered
+                return
     entries.append({
         "matcher": "",
         "hooks": [{"type": "command", "command": command}]
@@ -147,22 +155,64 @@ PYEOF
 
 ok "settings.json updated"
 
-# 10. Launch
-step "Launching Claude Notif"
-open "$APP_DEST"
+# 10. Write version file
+echo "$PACKAGE_VERSION" > "$VERSION_FILE"
+ok "Version recorded ($PACKAGE_VERSION)"
 
-# Cleanup
+# 11. Install auto-updater LaunchAgent
+step "Installing auto-updater"
+cp "$PACKAGE_DIR/scripts/updater.sh" "$UPDATER_SCRIPT"
+chmod +x "$UPDATER_SCRIPT"
+
+mkdir -p "$HOME/Library/LaunchAgents"
+cat > "$LAUNCH_AGENT_PLIST" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.claudenotif.updater</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>$UPDATER_SCRIPT</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>86400</integer>
+    <key>RunAtLoad</key>
+    <false/>
+    <key>StandardOutPath</key>
+    <string>$HOME/.claude/claude-notif-updater.log</string>
+    <key>StandardErrorPath</key>
+    <string>$HOME/.claude/claude-notif-updater.log</string>
+</dict>
+</plist>
+PLIST
+
+launchctl unload "$LAUNCH_AGENT_PLIST" 2>/dev/null || true
+launchctl load "$LAUNCH_AGENT_PLIST" 2>/dev/null
+ok "Auto-updater scheduled (runs daily)"
+
+# 12. Launch (skip in update mode)
+if [ "$IS_UPDATE" = false ]; then
+  step "Launching Claude Notif"
+  open "$APP_DEST"
+fi
+
 rm -rf "$BUILD_DIR"
 
-echo ""
-echo -e "${green}${bold}Installation complete.${reset}"
-echo ""
-echo "  App:    ~/Applications/Claude Notif.app"
-echo "  Config: ~/.claude/notifications.json"
-echo "  Hooks:  ~/.claude/hooks/claude-notif-*.sh"
-echo ""
-echo "The settings window is now open."
-echo "Grant notification permission if macOS prompts you."
-echo ""
-echo "To uninstall: npx claude-notif uninstall"
-echo ""
+if [ "$IS_UPDATE" = false ]; then
+  echo ""
+  echo -e "${green}${bold}Installation complete.${reset}"
+  echo ""
+  echo "  App:    ~/Applications/Claude Notif.app"
+  echo "  Config: ~/.claude/notifications.json"
+  echo "  Hooks:  ~/.claude/hooks/claude-notif-*.sh"
+  echo "  Auto-update: daily via LaunchAgent"
+  echo ""
+  echo "The settings window is now open."
+  echo "Grant notification permission if macOS prompts you."
+  echo ""
+  echo "To uninstall: npx claude-notif uninstall"
+  echo ""
+fi

@@ -4,6 +4,9 @@ APP_DEST="$HOME/Applications/Claude Notif.app"
 HOOKS_DIR="$HOME/.claude/hooks"
 SETTINGS_FILE="$HOME/.claude/settings.json"
 CONFIG_FILE="$HOME/.claude/notifications.json"
+VERSION_FILE="$HOME/.claude/claude-notif-version"
+UPDATER_SCRIPT="$HOME/.claude/claude-notif-updater.sh"
+LAUNCH_AGENT_PLIST="$HOME/Library/LaunchAgents/com.claudenotif.updater.plist"
 LSREGISTER="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
 
 bold="\033[1m"
@@ -18,6 +21,12 @@ warn() { echo -e "${yellow}  ⚠ $1${reset}"; }
 echo ""
 echo -e "${bold}claude-notif uninstaller${reset}"
 echo "─────────────────────────────────"
+
+# Stop auto-updater
+step "Removing auto-updater"
+launchctl unload "$LAUNCH_AGENT_PLIST" 2>/dev/null || true
+rm -f "$LAUNCH_AGENT_PLIST" "$UPDATER_SCRIPT"
+ok "Auto-updater removed"
 
 # Kill running instance
 step "Stopping Claude Notif"
@@ -73,6 +82,9 @@ PYEOF
 else
   ok "settings.json not found — skipped"
 fi
+
+# Remove version file
+rm -f "$VERSION_FILE"
 
 # Config file — ask
 echo ""
