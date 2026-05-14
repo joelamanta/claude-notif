@@ -36,7 +36,8 @@ case "$tool_name" in
 
     # Approval notification — debounced 10s
     ENABLED=$(jq -r '.enabled // true' "$CONFIG_FILE" 2>/dev/null)
-    if [ "$ENABLED" != "false" ] && [ -x "$NOTIFIER" ]; then
+    APPROVAL_ENABLED=$(jq -r '.enableApproval // true' "$CONFIG_FILE" 2>/dev/null)
+    if [ "$ENABLED" != "false" ] && [ "$APPROVAL_ENABLED" != "false" ] && [ -x "$NOTIFIER" ]; then
       should_notify=true
       if [ -f "$APPROVAL_LOCK" ]; then
         last_ts=$(cat "$APPROVAL_LOCK" 2>/dev/null)

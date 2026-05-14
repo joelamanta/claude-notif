@@ -56,19 +56,26 @@ if [ -n "$transcript_path" ] && [ -f "$transcript_path" ]; then
   fi
 fi
 
-# Pick sound + title prefix based on stop reason
+# Pick sound + title prefix based on stop reason, check per-event enabled flag
 sound="$SOUND_DONE"
 title_prefix="Claude Code"
+event_enabled="true"
 case "$reason" in
   *error*)
     sound="$SOUND_ERROR"
     title_prefix="⚠ Claude Code"
+    event_enabled=$(jq -r '.enableError // true' "$CONFIG_FILE" 2>/dev/null)
     ;;
   *interrupt*|*cancel*)
     sound="$SOUND_INTERRUPT"
     title_prefix="⏸ Claude Code"
+    event_enabled=$(jq -r '.enableInterrupt // true' "$CONFIG_FILE" 2>/dev/null)
+    ;;
+  *)
+    event_enabled=$(jq -r '.enableDone // true' "$CONFIG_FILE" 2>/dev/null)
     ;;
 esac
+[ "$event_enabled" = "false" ] && exit 0
 
 title="$title_prefix"
 [ -n "$session_name" ] && title="$title_prefix — $session_name"
