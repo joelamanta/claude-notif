@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+const { execFileSync } = require('child_process');
+const path = require('path');
+
+const isUninstall = process.argv[2] === 'uninstall';
+const script = isUninstall ? 'uninstall.sh' : 'install.sh';
+const scriptPath = path.join(__dirname, '..', 'scripts', script);
+
+try {
+  execFileSync('bash', [scriptPath], { stdio: 'inherit' });
+} catch (e) {
+  process.exit(1);
+}
