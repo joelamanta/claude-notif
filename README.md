@@ -2,7 +2,7 @@
 
 Native macOS notifications for [Claude Code](https://claude.ai/code) — plays a sound and shows a banner when Claude finishes responding.
 
-![Claude Notif settings window](https://raw.githubusercontent.com/teevoteam/claude-notif/main/assets/screenshot.png)
+![Claude Notif settings window](https://raw.githubusercontent.com/joelamanta/claude-notif/main/assets/screenshot.png)
 
 ## Install
 
