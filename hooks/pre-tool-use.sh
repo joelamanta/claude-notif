@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 # Claude Code PreToolUse hook
 # Writes current tool action to /tmp/claude-current-action.json
+# Fires approval notification for Bash commands (debounced 10s)
 
 ACTION_FILE="/tmp/claude-current-action.json"
 TODOS_FILE="/tmp/claude-todos.json"
+APPROVAL_LOCK="/tmp/claude-notif-approval.lock"
+CONFIG_FILE="$HOME/.claude/notifications.json"
+NOTIFIER="$HOME/Applications/Claude Notif.app/Contents/MacOS/ClaudeCode"
 
 input=$(cat)
 
@@ -29,6 +33,28 @@ case "$tool_name" in
     cmd=$(echo "$tool_input" | jq -r '.command // empty')
     short_cmd=$(echo "$cmd" | head -1 | cut -c1-40)
     action_label="Bash: $short_cmd"
+
+    # Approval notification — debounced 10s
+    ENABLED=$(jq -r '.enabled // true' "$CONFIG_FILE" 2>/dev/null)
+    if [ "$ENABLED" != "false" ] && [ -x "$NOTIFIER" ]; then
+      should_notify=true
+      if [ -f "$APPROVAL_LOCK" ]; then
+        last_ts=$(cat "$APPROVAL_LOCK" 2>/dev/null)
+        now=$(date +%s)
+        [ $((now - last_ts)) -lt 10 ] && should_notify=false
+      fi
+
+      if [ "$should_notify" = true ]; then
+        date +%s > "$APPROVAL_LOCK"
+        SOUND=$(jq -r '.soundApproval // "Funk"' "$CONFIG_FILE" 2>/dev/null)
+        SOUND_FILE="/System/Library/Sounds/${SOUND}.aiff"
+        [[ "$SOUND" == /* ]] && SOUND_FILE="$SOUND"
+        [ -f "$SOUND_FILE" ] && afplay "$SOUND_FILE" &
+        "$NOTIFIER" \
+          --title "⏳ Approval needed" \
+          --message "$short_cmd" &
+      fi
+    fi
     ;;
   TodoWrite)
     action_label="Updating tasks"

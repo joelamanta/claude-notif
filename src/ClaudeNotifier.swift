@@ -12,12 +12,14 @@ class NotifConfig: ObservableObject {
         var soundDone:      String = "Ping"
         var soundError:     String = "Basso"
         var soundInterrupt: String = "Pop"
+        var soundApproval:  String = "Funk"
     }
 
     @Published var enabled: Bool
     @Published var soundDone: String
     @Published var soundError: String
     @Published var soundInterrupt: String
+    @Published var soundApproval: String
 
     init() {
         let raw = try? Data(contentsOf: NotifConfig.fileURL)
@@ -26,11 +28,13 @@ class NotifConfig: ObservableObject {
         soundDone      = s.soundDone
         soundError     = s.soundError
         soundInterrupt = s.soundInterrupt
+        soundApproval  = s.soundApproval
     }
 
     func save() {
         let s = Stored(enabled: enabled, soundDone: soundDone,
-                       soundError: soundError, soundInterrupt: soundInterrupt)
+                       soundError: soundError, soundInterrupt: soundInterrupt,
+                       soundApproval: soundApproval)
         try? JSONEncoder().encode(s).write(to: NotifConfig.fileURL)
     }
 }
@@ -95,8 +99,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let btn = statusItem?.button {
-            btn.image = NSImage(systemSymbolName: "bell.fill", accessibilityDescription: "Claude Notif")
-            btn.image?.isTemplate = true
+            let icon = NSApp.applicationIconImage.copy() as! NSImage
+            icon.size = NSSize(width: 18, height: 18)
+            btn.image = icon
             btn.action = #selector(menuBarClicked)
             btn.target = self
         }
@@ -157,10 +162,10 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 0) {
 
             HStack {
-                Image(systemName: "bell.badge.fill")
-                    .font(.system(size: 18))
-                    .foregroundStyle(.orange)
-                Text("Claude Notif")
+                Image(nsImage: NSApp.applicationIconImage)
+                    .resizable()
+                    .frame(width: 28, height: 28)
+                Text("Claude Notification")
                     .font(.headline)
                 Spacer()
                 Toggle("", isOn: $config.enabled)
@@ -179,6 +184,8 @@ struct SettingsView: View {
                     SoundRow(label: "Error",        sound: $config.soundError,     config: config)
                     Divider().padding(.leading, 16)
                     SoundRow(label: "Interrupted",  sound: $config.soundInterrupt, config: config)
+                    Divider().padding(.leading, 16)
+                    SoundRow(label: "Approval",     sound: $config.soundApproval,  config: config)
                 }
 
                 Divider()
