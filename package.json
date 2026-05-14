@@ -1,9 +1,14 @@
 {
   "name": "claude-notif",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Native macOS notifications for Claude Code — sound + banner when Claude finishes responding",
-  "os": ["darwin"],
-  "cpu": ["arm64", "x64"],
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64",
+    "x64"
+  ],
   "bin": {
     "claude-notif": "bin/claude-notif"
   },
@@ -17,9 +22,19 @@
     "hooks/",
     "assets/AppIcon.icns"
   ],
-  "keywords": ["claude", "claude-code", "notifications", "macos", "hooks", "anthropic"],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "notifications",
+    "macos",
+    "hooks",
+    "anthropic"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">=16"
+  },
+  "dependencies": {
+    "update-notifier": "^7.3.1"
   }
 }
