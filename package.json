@@ -1,5 +1,5 @@
 {
-  "name": "noto",
+  "name": "claude-notif",
   "version": "1.21.0",
   "description": "Noto — native macOS notifications for Claude, Cursor, and Codex",
   "os": [
@@ -10,7 +10,8 @@
     "x64"
   ],
   "bin": {
-    "noto": "bin/noto"
+    "noto": "bin/noto",
+    "claude-notif": "bin/claude-notif"
   },
   "scripts": {
     "postinstall": "node bin/noto"
