@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.codex/hooks/pre-tool-use.sh\"",
+            "timeout": 10,
+            "statusMessage": "Noto tracking"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.codex/hooks/permission-request.sh\"",
+            "timeout": 10,
+            "statusMessage": "Noto approval alert"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.codex/hooks/stop.sh\"",
+            "timeout": 10,
+            "statusMessage": "Noto done alert"
+          }
+        ]
+      }
+    ]
+  }
+}

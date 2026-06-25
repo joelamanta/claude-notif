@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+const { execFileSync } = require('child_process');
+const path = require('path');
+const updateNotifier = require('update-notifier');
+const pkg = require('../package.json');
+
+updateNotifier({ pkg, updateCheckInterval: 1000 * 60 * 60 * 24 }).notify();
+
+const isUninstall = process.argv[2] === 'uninstall';
+const isUpdate    = process.argv[2] === '--update';
+const script = isUninstall ? 'uninstall.sh' : 'install.sh';
+const scriptPath = path.join(__dirname, '..', 'scripts', script);
+
+const args = ['bash', [scriptPath]];
+if (isUpdate) args[1].push('--update');
+
+try {
+  execFileSync(args[0], args[1], { stdio: 'inherit' });
+} catch (e) {
+  process.exit(1);
+}

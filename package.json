@@ -1,7 +1,7 @@
 {
-  "name": "claude-notif",
-  "version": "1.5.0",
-  "description": "Native macOS notifications for Claude Code — sound + banner when Claude finishes responding",
+  "name": "noto",
+  "version": "1.21.0",
+  "description": "Noto — native macOS notifications for Claude, Cursor, and Codex",
   "os": [
     "darwin"
   ],
@@ -10,10 +10,10 @@
     "x64"
   ],
   "bin": {
-    "claude-notif": "bin/claude-notif"
+    "noto": "bin/noto"
   },
   "scripts": {
-    "postinstall": "node bin/claude-notif"
+    "postinstall": "node bin/noto"
   },
   "files": [
     "bin/",
@@ -23,12 +23,13 @@
     "assets/AppIcon.icns"
   ],
   "keywords": [
+    "noto",
     "claude",
-    "claude-code",
+    "cursor",
+    "codex",
     "notifications",
     "macos",
-    "hooks",
-    "anthropic"
+    "hooks"
   ],
   "license": "MIT",
   "engines": {

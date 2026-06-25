@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleIdentifier</key>
-    <string>com.claudenotif.app</string>
+    <string>com.noto.app</string>
     <key>CFBundleName</key>
-    <string>Claude Notif</string>
+    <string>Noto</string>
     <key>CFBundleDisplayName</key>
-    <string>Claude Notif</string>
+    <string>Noto</string>
     <key>CFBundleExecutable</key>
-    <string>ClaudeCode</string>
+    <string>Noto</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleVersion</key>
-    <string>1.0</string>
+    <string>1.21.0</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.5.0</string>
+    <string>1.21.0</string>
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
     <key>NSHighResolutionCapable</key>
@@ -25,6 +25,11 @@
     <key>LSUIElement</key>
     <true/>
     <key>NSUserNotificationUsageDescription</key>
-    <string>Claude Notif sends you notifications when Claude Code finishes responding.</string>
+    <string>Noto sends notifications when Claude, Cursor, or Codex finish responding.</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
 </dict>
 </plist>
